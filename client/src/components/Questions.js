@@ -1,25 +1,30 @@
 import React,{useEffect, useState} from 'react'
 
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 /**Custom Hook */
 import { useFetchQuestion } from '../hooks/FetchQuestion'
+import { updateResultAction } from '../redux/result_reducer'
+import { updateResult } from '../hooks/setResult'
 
-export default function Questions() {
+export default function Questions({onChecked}) {
     
     const[checked,setChecked]=useState(undefined)
     const [{isLoading,apiData,serverError}]=useFetchQuestion()
     
 
     const questions= useSelector(state => state.questions.queue[state.questions.trace]);
-    const trace= useSelector(state=>state.questions.trace)
+    const {trace}= useSelector(state=>state.questions)
+    const result= useSelector(state=>state.result.result)
+    const dispatch= useDispatch()
     useEffect(() => {
-       //console.log(questions)
-    })
 
-    function onSelect(){
-        setChecked(true)
-        // console.log('radio buton change')
+       dispatch(updateResult({trace,checked}))
+    },[checked])
+
+    function onSelect(i){
+        onChecked(i)
+        setChecked(i)
     }
     if(isLoading) return <h3 className='text-light'>isLoading</h3>
     if(serverError) return <h3 className='text-light'>{serverError|| "unknown Error"}</h3>
@@ -34,13 +39,13 @@ export default function Questions() {
                 <li key={i}>
                      <input
                         type='radio'
-                        value={false}
+                        value={true}
                         name='options'
                         id={'q${i}-option'}
-                        onChange={onSelect}
+                        onChange={()=> onSelect(i)}
                     />
                     <label className='text-primary' htmlFor={'q${i}-option'}>{q}</label>
-                    <div className='check'></div>
+                    <div className={'check ${result[trace]==i? "checked":""}'}></div>
                 </li> 
 
 
